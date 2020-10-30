@@ -74,7 +74,7 @@ def createRectangularGrid(start, end, n_points):
         temp = round(n_points/4)
     else:
         temp = round(n_points/4)-1
-    for x in range(temp,-temp,-1):
+    for x in range(temp,-temp-1,-1):
         j=0
         A_lon, A_lat, A_b_az = geodesic.fwd(start[1], start[0], fwd_azimuth - 90, x * distance)
         B_lon, B_lat, B_b_az = geodesic.fwd(end[1], end[0], fwd_azimuth - 90, x * distance)
