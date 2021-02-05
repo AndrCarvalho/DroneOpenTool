@@ -114,5 +114,5 @@ def createRectangularGrid(start, end, n_points):
     #print(listNodes)
 
     #bound printing
-    print("Bounds: ",[[listNodes['bounds'][0][1], listNodes['bounds'][0][0]],[listNodes['bounds'][1][1], listNodes['bounds'][1][0]],[listNodes['bounds'][3][1], listNodes['bounds'][3][0]],[listNodes['bounds'][2][1], listNodes['bounds'][2][0]],[listNodes['bounds'][0][1], listNodes['bounds'][0][0]]])
+    #print("Bounds: ",[[listNodes['bounds'][0][1], listNodes['bounds'][0][0]],[listNodes['bounds'][1][1], listNodes['bounds'][1][0]],[listNodes['bounds'][3][1], listNodes['bounds'][3][0]],[listNodes['bounds'][2][1], listNodes['bounds'][2][0]],[listNodes['bounds'][0][1], listNodes['bounds'][0][0]]])
     return listNodes

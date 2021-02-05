@@ -6,6 +6,9 @@ def path_to_html(name,area,missionGrid,path,margin_lvl,method):
     start_geojson = geojson.Point((missionGrid['start'][1], missionGrid['start'][0]))
     end_geojson = geojson.Point((missionGrid['end'][1], missionGrid['end'][0]))
 
+    bounds_cage = geojson.LineString([[missionGrid['bounds'][0][1], missionGrid['bounds'][0][0]], [missionGrid['bounds'][1][1], missionGrid['bounds'][1][0]], [missionGrid['bounds'][3][1], missionGrid['bounds'][3][0]], [missionGrid['bounds'][2][1], missionGrid['bounds'][2][0]], [missionGrid['bounds'][0][1], missionGrid['bounds'][0][0]]])
+    area_cage = geojson.LineString([[area[1], area[0]], [area[1], area[2]], [area[3], area[2]], [area[3], area[0]], [area[1], area[0]]])
+
     if missionGrid['distance_s_e'] > 2600:
         zoom = 14
     elif missionGrid['distance_s_e'] > 6000:
@@ -41,7 +44,12 @@ def path_to_html(name,area,missionGrid,path,margin_lvl,method):
             var geojson_path = """ + str(path_geojson) + """
             var geojson_start = """ + str(start_geojson) + """
             var geojson_end = """ + str(end_geojson) + """
+            
+            var geojson_restZ = """ + str(bounds_cage) + """
+            var geojson_dataZ = """ + str(area_cage) + """
 
+            L.geoJSON(geojson_restZ,{ dashArray: '5,5', color: 'black', opacity:0.6 }).addTo(mymap);
+            L.geoJSON(geojson_dataZ,{ color: 'red', opacity:0.2 }).addTo(mymap);
             L.geoJSON(geojson_path).addTo(mymap);
             L.geoJSON(geojson_start).addTo(mymap);
             L.geoJSON(geojson_end).addTo(mymap);
@@ -56,6 +64,14 @@ def path_to_html(name,area,missionGrid,path,margin_lvl,method):
             "var geojson_end = " + str(end_geojson))
     '''
     f.close()
+
+    '''
+    print("Bounds: ", [[listNodes['bounds'][0][1], listNodes['bounds'][0][0]],
+                       [listNodes['bounds'][1][1], listNodes['bounds'][1][0]],
+                       [listNodes['bounds'][3][1], listNodes['bounds'][3][0]],
+                       [listNodes['bounds'][2][1], listNodes['bounds'][2][0]],
+                       [listNodes['bounds'][0][1], listNodes['bounds'][0][0]]])
+    '''
 
 def path_to_geojson(name,missionGrid,path,margin_lvl,method):
     start_geojson = geojson.Point((missionGrid['start'][1], missionGrid['start'][0]))

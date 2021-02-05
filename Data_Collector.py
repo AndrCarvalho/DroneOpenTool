@@ -1,10 +1,63 @@
 # -*- coding: utf-8 -*-
 import overpy
-#Input:
-# squared_area= (south,west,north,east) .. example (40.63812063836527,-7.933373451232911,40.66009893471535,-7.8971529006958)
 
-#TODO: dictionary with all the key-words per restriction like: {"building": '"building"', "residential": '"landuse"="residential"' ... }
-# and aplly it to only 1 function
+RESTRICTIONS = {'buildings': """ "building" """,
+                'airways': """ "aeroway"="aerodrome" """,
+                'residential': """ "landuse"="residential" """,
+                'water': """ "natural"="water" """,
+                'woods': """ "natural"="wood" """,
+                'military': """ "landuse"="military" """
+                }
+
+def collect_OSM_data(restr, area):
+    api = overpy.Overpass()
+
+    bbox = str(area)
+
+    query = """
+        [out:json][timeout:25];
+        (
+        way[""" + RESTRICTIONS[restr] + """]""" + bbox + """;
+        >;
+        relation[""" + RESTRICTIONS[restr] + """]""" + bbox + """;
+        >>;
+        );
+        out body;
+        """
+    try:
+        result = api.query(query)
+    except:
+        print("Query failed..")
+        return
+
+    ways = []
+    nodes = []
+
+    for way in result.ways:
+        ways.append(way)
+        for num, node in enumerate(way.nodes):
+            nodes.append(node)
+
+    for r in result.relations:
+        for r_way in aux_get_element(r.id, result.relations).members:
+            ways.append(aux_get_element(r_way.ref, result.ways))
+
+    ways = list(dict.fromkeys(ways))
+    nodes = list(dict.fromkeys(nodes))
+
+    print("Number of " + restr + ":", len(ways))
+    return nodes, ways
+
+def aux_get_element(id,list):
+    for i in list:
+        if id == i.id:
+            return i
+
+def print_all_nodesCollected(list_nodes):
+    for num, node in enumerate(list_nodes):
+        print(str(num) + " -> lat=", node.lat, " | lon=", node.lon)
+
+'''
 def collectBuildings_OSM_data(squared_area):
     api = overpy.Overpass()
 
@@ -40,7 +93,6 @@ def collectBuildings_OSM_data(squared_area):
 
     print("Number of Buildings:",len(building_ways))
     return building_nodes, building_ways
-
 
 def collectAero_OSM_data(squared_area):
     api = overpy.Overpass()
@@ -145,11 +197,11 @@ def collectWaterAreas_OSM_data(squared_area):
         watArea_ways.append(way)
         for num, node in enumerate(way.nodes):
             watArea_nodes.append(node)
-    '''
+    
     for r in result.relations:
         for r_way in aux_get_element(r.id, result.relations).members:
            watArea_ways.append(aux_get_element(r_way.ref, result.ways))
-    '''
+    
     watArea_ways = list(dict.fromkeys(watArea_ways))  # water lakes/spots
     watArea_nodes = list(dict.fromkeys(watArea_nodes)) # nodes of ways
 
@@ -195,8 +247,6 @@ def collectWoodsAreas_OSM_data(squared_area):
     print("Number of Woods Areas:", len(woodArea_ways))
     return woodArea_nodes, woodArea_ways
 
-#landuse	military
-
 def collectMilitaryAreas_OSM_data(squared_area):
     api = overpy.Overpass()
 
@@ -236,11 +286,4 @@ def collectMilitaryAreas_OSM_data(squared_area):
     print("Number of Military Areas:", len(militaryArea_ways))
     return militaryArea_nodes, militaryArea_ways
 
-def aux_get_element(id,list):
-    for i in list:
-        if id == i.id:
-            return i
-
-def print_all_nodesCollected(list_nodes):
-    for num, node in enumerate(list_nodes):
-        print(str(num) + " -> lat=", node.lat, " | lon=", node.lon)
+'''
