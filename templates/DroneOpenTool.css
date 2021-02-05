@@ -1,0 +1,162 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito&display=swap');
+html {
+  scroll-behavior: smooth;
+}
+
+/*
+  HEADER: TITLE AND SPAN
+ */
+.header{
+    padding-bottom: 1.5em;
+    font-family: 'Nunito', sans-serif;
+}
+
+.header h1{
+   margin: auto;
+   text-align: center;
+   font-size: 60px;
+   text-shadow: 1px 1px 3px rgba(0,0,0,.2);
+}
+
+.header p{
+   margin: auto;
+   text-align: center;
+   font-size: 30px;
+   text-shadow: 1px 1px 1px rgba(0,0,0,.2);
+}
+
+
+/*
+ CORE: MAP AND VARIABLES
+ */
+.core{
+    padding: 1em;
+    padding-left: 4em;
+    padding-right: 4em;
+    margin-left: auto;
+    margin-right: auto;
+    height: 70vh;
+    width: 90%;
+    position: relative;
+    grid-template-areas:'M V';
+}
+.map{
+    grid-area: M;
+    float: left;
+    border-radius: 10px;
+    height: 70vh;
+    width: 65%;
+    box-shadow: 5px 5px 5px rgba(0,0,0,.1);
+    border: 1.5px solid rgba(0,0,0,.3);
+}
+
+.variables{
+    width: 250px;
+    grid-area: V;
+    float: left;
+    margin-left: 2em;
+    border-radius: 20px;
+    border: 1.5px solid rgba(0,0,0,.3);
+    background: rgba(231, 231, 231, 0.2);
+    box-shadow: 5px 5px 5px rgba(0,0,0,.1);
+    padding: 1em;
+    font-family: 'Nunito', sans-serif;
+    text-align: left;
+}
+.variables button{
+   margin: auto;
+}
+
+.details{
+    padding-bottom: 1.5em;
+    font-family: 'Nunito', sans-serif;
+}
+
+.details h3{
+   margin: auto;
+   text-align: left;
+   font-size: 30px;
+
+}
+
+.details p{
+   margin: auto;
+   text-align: left;
+   font-size: 15px;
+
+}
+
+.container{
+    width: 86%;
+    float: left;
+    border-radius: 20px;
+    border: 1.5px solid rgba(0,0,0,.3);
+    background: rgba(231, 231, 231, 0.2);
+    box-shadow: 5px 5px 5px rgba(0,0,0,.1);
+    padding: 1em;
+    margin-top: 1em;
+    font-family: 'Nunito', sans-serif;
+    text-align: left;
+}
+/*
+.inner-det{
+    text-align: left;
+    margin-bottom: 1em;
+    font-family: 'Nunito', sans-serif;
+}
+
+.grid-container {
+  display: grid;
+  grid-template-columns: auto auto auto;
+  padding: 0.5em;
+}
+*/
+.custom-button{
+    font-size: 1rem;
+    border-width: 1px;
+    border-style: solid;
+    border-radius: 20px;
+    padding: .40em 2.5em;
+    background: rgba(157, 157, 157, 0.65);
+    color: #4f4f4f;
+    display: flex;
+    justify-content: center;
+}
+
+.custom-button-accent{
+    color: #ffffff;
+}
+.custom-button-accent:hover,
+.custom-button:focus{
+    background: rgba(155, 155, 155, 0.75);
+    color: #ffffff;
+    backdrop-filter: blur(2px);
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.15);
+}
+
+   /* Changes sizes when window width increases*/
+
+        @media (max-width: 63rem) {
+            .core{
+                grid-template-areas:'M'
+                                    'V';
+                padding: .5em;
+
+            }
+            .variables{
+                margin-top: 2em;
+                margin-bottom: 2em;
+            }
+            .map{
+                width: 100%;
+            }
+            .container{
+                width: 100%;
+            }
+        }
+
+.slidecontainer {
+  width: 100%; /* Width of the outside container */
+}
+
+

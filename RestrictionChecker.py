@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 def isInsideRestriction(lat, lon, way_nodes):
     #print("Coordenada:", lat, lon)
 

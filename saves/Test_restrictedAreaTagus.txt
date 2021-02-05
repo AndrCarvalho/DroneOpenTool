@@ -1,0 +1,26 @@
+C:\Users\andre\Desktop\IST\Dissertassion\DroneGit\venv\Scripts\python.exe C:/Users/andre/Desktop/IST/Dissertassion/DroneGit/MainRun.py
+2021-01-19 09:43:18.904436
+Number of Buildings: 2256
+distance start to end: 3118.0614568018523 m
+distance between nodes: 4 m
+furthest neighbour: 6 m
+Starting point: (38.737055, -9.31607)
+Ending point: (38.737055, -9.280208)
+Number of grid nodes: 245700
+Bounds:  [[-9.3160717558923, 38.7440769943071], [-9.2802097558923, 38.7440769943071], [-9.2802062444515, 38.7300329972347], [-9.3160682444515, 38.7300329972347], [-9.3160717558923, 38.7440769943071]]
+points_filtered: 19461
+Problem Structure: Collected
+Updating.. Margin: 3 - 13.363120529150796
+Updating..Over
+w: 0
+--Final Path-- 0:00:48.978974
+-num descarted nodes: 0
+Collecting OSM data: 0:00:01.106473
+Creating Grid: 0:00:01.341966
+Restrited points: 2:34:25.962034
+Constructing Graph: 0:00:32.655837
+Path Planning: 0:00:48.978974
+Total time: 2:35:50.045284
+Done
+
+Process finished with exit code 0

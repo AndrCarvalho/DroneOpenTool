@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import geojson
 
 def path_to_html(name,area,missionGrid,path,margin_lvl,method):
@@ -5,8 +6,15 @@ def path_to_html(name,area,missionGrid,path,margin_lvl,method):
     start_geojson = geojson.Point((missionGrid['start'][1], missionGrid['start'][0]))
     end_geojson = geojson.Point((missionGrid['end'][1], missionGrid['end'][0]))
 
+    if missionGrid['distance_s_e'] > 2600:
+        zoom = 14
+    elif missionGrid['distance_s_e'] > 6000:
+        zoom = 13
+    else:
+        zoom = 15
+
     path_geojson = geojson.LineString([(p[1], p[0]) for p in path])
-    f = open("Demo Results/"+str(name) + "_" + str(missionGrid['n_points']) + "_" + str(margin_lvl) + "_" +str(method) +".html", "w")
+    f = open("PaperComp/"+str(name) + "_" + str(missionGrid['n_points']) + "_" + str(margin_lvl) + "_" +str(method) +".html", "w")
     f.write(
         """<html>
         <head>
@@ -23,7 +31,7 @@ def path_to_html(name,area,missionGrid,path,margin_lvl,method):
             <script>
 
             var mymap = L.map('mapid')
-            .setView(""" + str(center_pos) + """,15);
+            .setView(""" + str(center_pos) + "," + str(zoom) + """);
 
             L.tileLayer('https://{s}.tile.openstreetmap.de/tiles/osmde/{z}/{x}/{y}.png', {
                 maxZoom: 18,
@@ -61,8 +69,24 @@ def path_to_geojson(name,missionGrid,path,margin_lvl,method):
 
     f.close()
 
+def path_to_JsonInterface(missionGrid,path):
+    start_geojson = geojson.Point((missionGrid['start'][1], missionGrid['start'][0]))
+    end_geojson = geojson.Point((missionGrid['end'][1], missionGrid['end'][0]))
+    path_geojson = geojson.LineString([(p[1], p[0]) for p in path])
+
+    results = {'total_dist': missionGrid['total_dist'],'travel_time_10ms_min': missionGrid['travel_time_10ms_min']}
+
+    return start_geojson,end_geojson,path_geojson,results
+
 def print_path_mapcos(listNodes, path):
     print(str(listNodes['start'])[1:-1] + " <green>")
     for node in path[1:-1]:
          print(str(node)[1:-1] + " <orange>")
     print(str(listNodes['end'])[1:-1] + " <red>")
+
+def print_grid_mapcos(listNodes):
+    print(str(listNodes['start'])[1:-1] + " <green>")
+    for node in listNodes['grid']:
+         print(str(node)[1:-1] + " <orange>")
+    print(str(listNodes['end'])[1:-1] + " <pink>")
+

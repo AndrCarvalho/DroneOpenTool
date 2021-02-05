@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import pyproj
 import numpy as np
 
@@ -50,12 +51,13 @@ def createSquareGrid(start, end, n_points):##outdated see rectangular
 def createRectangularGrid(start, end, n_points):
     listNodes = {}
     listNodes["n_points"] = n_points
-    listNodes["start"],listNodes["end"] = start,end
+    listNodes["start"],listNodes["end"] = start, end
     listNodes["grid"] = []
     listNodes["npgrid_lat"] = np.zeros((round(n_points / 2) + 1,n_points))
     listNodes["npgrid_lon"] = np.zeros((round(n_points / 2) + 1,n_points))
 
     fwd_azimuth, back_azimuth, distance_s_e = geodesic.inv(start[1], start[0], end[1], end[0])
+    listNodes["distance_s_e"] = distance_s_e
     print("distance start to end:",distance_s_e,"m") #straigth line
 
     n = n_points - 2  # number of points in a line excluding start and end
@@ -65,6 +67,8 @@ def createRectangularGrid(start, end, n_points):
     furthest_neighbour = (distance**2 + distance**2)**0.5
     print("furthest neighbour:", round(furthest_neighbour), "m")
     listNodes["fur_neighbour"] = furthest_neighbour
+
+    listNodes['bounds'] = []
 
     #listNodes["grid"].append(start) #making sure 'start' node is there
     i= 0
@@ -78,6 +82,10 @@ def createRectangularGrid(start, end, n_points):
         j=0
         A_lon, A_lat, A_b_az = geodesic.fwd(start[1], start[0], fwd_azimuth - 90, x * distance)
         B_lon, B_lat, B_b_az = geodesic.fwd(end[1], end[0], fwd_azimuth - 90, x * distance)
+
+        if x == temp or x == -temp:
+            listNodes['bounds'].append((round(A_lat,13), round(A_lon,13)))
+            listNodes['bounds'].append((round(B_lat, 13), round(B_lon, 13)))
 
         listNodes["grid"].append((round(A_lat,13), round(A_lon,13)))
         listNodes["npgrid_lat"][i][j] = round(A_lat,13)
@@ -104,4 +112,7 @@ def createRectangularGrid(start, end, n_points):
     print("Number of grid nodes:", len(listNodes["grid"]))
 
     #print(listNodes)
+
+    #bound printing
+    print("Bounds: ",[[listNodes['bounds'][0][1], listNodes['bounds'][0][0]],[listNodes['bounds'][1][1], listNodes['bounds'][1][0]],[listNodes['bounds'][3][1], listNodes['bounds'][3][0]],[listNodes['bounds'][2][1], listNodes['bounds'][2][0]],[listNodes['bounds'][0][1], listNodes['bounds'][0][0]]])
     return listNodes

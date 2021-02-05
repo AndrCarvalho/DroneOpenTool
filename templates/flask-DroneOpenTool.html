@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/DroneOpenTool.css')}}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+          integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+          crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+            integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+            crossorigin=""></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+    <title>DroneOpenTool</title>
+</head>
+<body>
+ <!-- HEADER: Title (h1) & Span (p) -->
+    <div class="header">
+        <h1>DroneOpenTool</h1>
+        <p>A tool to plan your drone mission</p>
+    </div>
+
+
+    <div class="core">
+        <div id="mapid" class="map"></div>
+        <div class="variables">
+            <form id="form_map" class="form_map">
+                <label for="s_loc">Starting Location:</label>
+                <input type="text" id="s_loc" name="s_loc" readonly onfocus="value='click on map'" onBlur="setCurId(this.id)"><br><br>
+                <label for="e_loc">Goal Location:</label>
+                <input type="text" id="e_loc" name="e_loc" readonly onfocus="value='click on map'" onBlur="setCurId(this.id)"><br><br>
+                <label for="restrictions">Restrictions:</label>
+                <div id="restrictions">
+                    <input type="checkbox" id="res_build" name="res_build" value="buildings">
+                    <label for="res_build"> Buildings</label><br>
+                    <input type="checkbox" id="res_water" name="res_water" value="water">
+                    <label for="res_water"> Water spots</label><br>
+                    <input type="checkbox" id="res_resi" name="res_resi" value="residential">
+                    <label for="res_resi"> Residential Areas</label><br>
+                    <input type="checkbox" id="res_woods" name="res_woods" value="woods">
+                    <label for="res_woods"> Woods Areas</label><br>
+                    <input type="checkbox" id="res_military" name="res_military" value="military">
+                    <label for="res_military"> Military Areas</label><br>
+                    <input type="checkbox" id="res_aero" name="res_aero" value="aero">
+                    <label for="res_aero"> Airport Areas</label><br>
+                </div>
+            </form>
+            <button type="button" form="form_map" onclick="pre_compute('form_map')" class="custom-button custom-button-accent" >Select</button>
+            <p id="distance" style="visibility: hidden" value="0">Distance: </p>
+            <form id="form_gran_mar">
+                <div id="sliders" class="slidecontainer" style="visibility: hidden">
+                    <input id="gran_slider" type="range" min="1" max="10" value="1"  style="visibility: hidden"><br>
+                    <label id="gran_output" for="gran_slider"  style="visibility: hidden"> Granularity: 250</label><br>
+                    <input id="margin_slider" type="range" min="0" max="5" value="0" style="visibility: hidden"><br>
+                    <label id="margin_output" for="margin_slider" style="visibility: hidden"> Margin: 10</label><br>
+                </div>
+            </form>
+            <button type="button" id="computeB" form="form_gran_mar" onclick="compute('form_map','form_gran_mar')" class="custom-button custom-button-accent" style="visibility: hidden">Compute</button>
+        </div>
+
+        <div class="container" id="results" style="visibility: hidden">
+            <div class="details">
+                <h3>Start-Goal</h3>
+                <p id="total_distance">Total Distance: </p>
+                <p id="travel_time">Travel Time (at 10 m/s): </p>
+                <p>next</p>
+            </div>
+            <div class="details">
+                <h3>Start-Goal-Start</h3>
+                <p id="total_distance2x">Total Distance: </p>
+                <p id="travel_time2x">Travel Time (at 10 m/s): </p>
+                <p>next</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='javascript/map_funct.js')}}"></script>
+    <script src="{{ url_for('static', filename='javascript/sliders.js')}}"></script>
+
+</body>
+</html>

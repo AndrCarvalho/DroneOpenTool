@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DroneOpenTool</title>
+    <link rel="stylesheet" href="DroneOpenTool.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+          integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+          crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+            integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+            crossorigin=""></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+</head>
+<body>
+
+    <!-- HEADER: Title (h1) & Span (p) -->
+    <div class="header">
+        <h1>DroneOpenTool</h1>
+        <p>A tool to plan your drone mission</p>
+    </div>
+
+
+    <div class="core">
+        <div id="mapid" class="map"></div>
+        <div class="variables">
+            <form id="form_map" class="form_map">
+                <label for="s_loc">Starting Location:</label>
+                <input type="text" id="s_loc" name="s_loc" readonly onfocus="value='click on map'" onBlur="setCurId(this.id)"><br><br>
+                <label for="e_loc">Goal Location:</label>
+                <input type="text" id="e_loc" name="e_loc" readonly onfocus="value='click on map'" onBlur="setCurId(this.id)"><br><br>
+                <label for="restrictions">Restrictions:</label>
+                <div id="restrictions">
+                    <input type="checkbox" id="res_build" name="res_build" value="buildings">
+                    <label for="res_build"> Buildings</label><br>
+                    <input type="checkbox" id="res_water" name="res_water" value="water">
+                    <label for="res_water"> Water spots</label><br>
+                    <input type="checkbox" id="res_resi" name="res_resi" value="residential">
+                    <label for="res_resi"> Residential Areas</label><br>
+                    <input type="checkbox" id="res_woods" name="res_woods" value="woods">
+                    <label for="res_woods"> Woods Areas</label><br>
+                    <input type="checkbox" id="res_military" name="res_military" value="military">
+                    <label for="res_military"> Military Areas</label><br>
+                    <input type="checkbox" id="res_aero" name="res_aero" value="aero">
+                    <label for="res_aero"> Airport Areas</label><br>
+                </div>
+            </form>
+            <button type="button" form="form_map" onclick="pre_compute('form_map')" class="custom-button custom-button-accent" >Select</button>
+            <p id="distance" style="visibility: hidden" value="0">Distance: </p>
+            <form id="form_gran_mar">
+                <div id="sliders" class="slidecontainer" style="visibility: hidden">
+                    <input id="gran_slider" type="range" min="1" max="10" value="1"  style="visibility: hidden"><br>
+                    <label id="gran_output" for="gran_slider"  style="visibility: hidden"> Granularity: 250</label><br>
+                    <input id="margin_slider" type="range" min="0" max="5" value="0" style="visibility: hidden"><br>
+                    <label id="margin_output" for="margin_slider" style="visibility: hidden"> Margin: 10</label><br>
+                </div>
+            </form>
+            <button type="button" id="computeB" form="form_gran_mar" onclick="compute('form_map','form_gran_mar')" class="custom-button custom-button-accent" style="visibility: hidden">Compute</button>
+        </div>
+		
+        <div class="container" id="results" style="visibility: hidden">
+            <div class="details">
+                <h3>Start-Goal</h3>
+                <p id="total_distance">Total Distance: </p>
+                <p id="travel_time">Travel Time (at 10 m/s): </p>
+                <p>next</p>
+            </div>
+            <div class="details">
+                <h3>Start-Goal-Start</h3>
+                <p id="total_distance2x">Total Distance: </p>
+                <p id="travel_time2x">Travel Time (at 10 m/s): </p>
+                <p>next</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Map Script -->
+    <script>
+
+    var mymap = L.map('mapid')
+    .setView([38.736806, -9.29845],15);
+	console.log(mymap)
+
+    L.tileLayer('https://{s}.tile.openstreetmap.de/tiles/osmde/{z}/{x}/{y}.png', {
+        maxZoom: 18,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(mymap);
+	
+	//var geojson_bounds = {"coordinates": [[-9.276924133300783, 38.7542171440524],[-9.276924133300783,38.72034047123783],[-9.327907562255861,38.72034047123783],[-9.327907562255861,38.7542171440524],[-9.276924133300783, 38.7542171440524]], "type": "LineString"}
+	var geojson_restZ = {"coordinates": [[-9.3160717488681, 38.7440489063467], [-9.2802097488681, 38.7440489063467], [-9.280206251473, 38.7300610852626], [-9.316068251473, 38.7300610852626], [-9.3160717488681, 38.7440489063467]], "type": "LineString"}
+    //var geojson_path = {"coordinates": [[-8.64477, 40.64025], [-8.644776, 40.640222], [-8.644782, 40.640194], [-8.644788, 40.640166], [-8.644794, 40.640138], [-8.6448, 40.64011], [-8.644806, 40.640082], [-8.644812, 40.640054], [-8.644818, 40.640026], [-8.644824, 40.639997], [-8.64483, 40.639969], [-8.644799, 40.639937], [-8.644768, 40.639904], [-8.644737, 40.639872], [-8.644707, 40.639839], [-8.644676, 40.639806], [-8.644645, 40.639774], [-8.644608, 40.639769], [-8.644572, 40.639765], [-8.644535, 40.63976], [-8.644498, 40.639756], [-8.644461, 40.639751], [-8.644425, 40.639747], [-8.644388, 40.639742], [-8.644351, 40.639738], [-8.644315, 40.639733], [-8.644278, 40.639729], [-8.644241, 40.639724], [-8.644204, 40.63972], [-8.644168, 40.639715], [-8.644131, 40.639711], [-8.644094, 40.639706], [-8.644058, 40.639702], [-8.644021, 40.639697], [-8.643984, 40.639693], [-8.643947, 40.639688], [-8.643911, 40.639684], [-8.643874, 40.639679], [-8.643837, 40.639674], [-8.643801, 40.63967], [-8.643764, 40.639665], [-8.643727, 40.639661], [-8.64369, 40.639656], [-8.643654, 40.639652], [-8.643617, 40.639647], [-8.64358, 40.639643], [-8.64355, 40.63961], [-8.643556, 40.639582], [-8.643561, 40.639554], [-8.643567, 40.639526], [-8.643573, 40.639498], [-8.643579, 40.63947], [-8.643585, 40.639442], [-8.643591, 40.639414], [-8.643597, 40.639386], [-8.643603, 40.639358], [-8.643609, 40.63933], [-8.643615, 40.639302], [-8.643658, 40.639278], [-8.643664, 40.63925], [-8.64367, 40.639222], [-8.643676, 40.639194], [-8.643682, 40.639166], [-8.643687, 40.639138], [-8.643693, 40.63911], [-8.643736, 40.639086], [-8.643742, 40.639058], [-8.643748, 40.63903], [-8.643754, 40.639002], [-8.64376, 40.638974], [-8.643766, 40.638946], [-8.643809, 40.638922], [-8.643815, 40.638894], [-8.64382, 40.638866], [-8.643826, 40.638838], [-8.643832, 40.63881], [-8.643838, 40.638782], [-8.643844, 40.638754], [-8.643887, 40.63873], [-8.643893, 40.638702], [-8.643899, 40.638674], [-8.643905, 40.638646], [-8.643911, 40.638618], [-8.643917, 40.63859], [-8.643959, 40.638567], [-8.643965, 40.638538], [-8.643971, 40.63851], [-8.643977, 40.638482], [-8.643983, 40.638454], [-8.643989, 40.638426], [-8.644032, 40.638403], [-8.644038, 40.638375], [-8.644044, 40.638347], [-8.64405, 40.638319], [-8.644056, 40.63829], [-8.644062, 40.638262], [-8.644068, 40.638234], [-8.64411, 40.638211], [-8.644116, 40.638183], [-8.644122, 40.638155], [-8.644128, 40.638127], [-8.644134, 40.638099], [-8.64414, 40.638071], [-8.644183, 40.638047], [-8.644189, 40.638019], [-8.644195, 40.637991], [-8.644201, 40.637963], [-8.644206, 40.637935], [-8.644249, 40.637911], [-8.644292, 40.637888], [-8.644334, 40.637864], [-8.644377, 40.637841], [-8.64442, 40.637817], [-8.644462, 40.637793], [-8.644505, 40.63777], [-8.644548, 40.637746], [-8.64459, 40.637723], [-8.644633, 40.637699], [-8.644676, 40.637676], [-8.644718, 40.637652], [-8.644761, 40.637629], [-8.644804, 40.637605], [-8.644846, 40.637582], [-8.644889, 40.637558], [-8.644932, 40.637535], [-8.644974, 40.637511], [-8.645017, 40.637487], [-8.645023, 40.637459], [-8.645066, 40.637436], [-8.645072, 40.637408], [-8.645078, 40.63738], [-8.645084, 40.637352], [-8.64509, 40.637324], [-8.645095, 40.637296], [-8.645101, 40.637268], [-8.645107, 40.637239], [-8.645113, 40.637211], [-8.645119, 40.637183], [-8.645125, 40.637155], [-8.645131, 40.637127], [-8.645137, 40.637099], [-8.645143, 40.637071], [-8.645149, 40.637043], [-8.645155, 40.637015], [-8.645161, 40.636987], [-8.645167, 40.636959], [-8.645173, 40.636931], [-8.645179, 40.636903], [-8.645185, 40.636875], [-8.645191, 40.636847], [-8.645197, 40.636819], [-8.645203, 40.63679], [-8.645245, 40.636767], [-8.645251, 40.636739], [-8.645257, 40.636711], [-8.645263, 40.636683], [-8.645269, 40.636655], [-8.645275, 40.636627], [-8.645281, 40.636599], [-8.645287, 40.636571], [-8.645293, 40.636542], [-8.645299, 40.636514], [-8.645305, 40.636486], [-8.645311, 40.636458], [-8.645317, 40.63643], [-8.645286, 40.636398], [-8.645249, 40.636393], [-8.645213, 40.636389], [-8.645182, 40.636356], [-8.645145, 40.636352], [-8.645114, 40.636319], [-8.645084, 40.636286], [-8.645053, 40.636254], [-8.645016, 40.636249], [-8.644979, 40.636245], [-8.644943, 40.63624], [-8.644906, 40.636236], [-8.644869, 40.636231], [-8.644833, 40.636227], [-8.644796, 40.636222], [-8.644765, 40.63619], [-8.644734, 40.636157], [-8.644704, 40.636124], [-8.644667, 40.63612], [-8.644636, 40.636087], [-8.644605, 40.636055], [-8.644575, 40.636022], [-8.644538, 40.636018], [-8.644507, 40.635985], [-8.644513, 40.635957], [-8.644519, 40.635929], [-8.644525, 40.635901], [-8.644494, 40.635868], [-8.644463, 40.635836], [-8.644433, 40.635803], [-8.644396, 40.635799], [-8.644365, 40.635766], [-8.644335, 40.635733], [-8.64434, 40.635705], [-8.644346, 40.635677], [-8.644352, 40.635649], [-8.644358, 40.635621], [-8.644364, 40.635593], [-8.64437, 40.635565], [-8.644376, 40.635537], [-8.644382, 40.635509], [-8.644388, 40.635481], [-8.644431, 40.635457], [-8.644473, 40.635434], [-8.644479, 40.635406], [-8.644522, 40.635382], [-8.644565, 40.635359], [-8.644607, 40.635335], [-8.644613, 40.635307], [-8.644656, 40.635284], [-8.644699, 40.63526], [-8.644741, 40.635236], [-8.644747, 40.635208], [-8.64479, 40.635185], [-8.644833, 40.635161], [-8.644875, 40.635138], [-8.644881, 40.63511], [-8.644924, 40.635086], [-8.644967, 40.635063], [-8.645009, 40.635039], [-8.645052, 40.635016], [-8.645095, 40.634992], [-8.645137, 40.634968], [-8.64518, 40.634945], [-8.645223, 40.634921], [-8.645265, 40.634898], [-8.645308, 40.634874], [-8.645351, 40.634851], [-8.645356, 40.634823], [-8.645362, 40.634795], [-8.645368, 40.634767], [-8.645374, 40.634739], [-8.64538, 40.63471], [-8.645423, 40.634687], [-8.645466, 40.634663], [-8.645508, 40.63464], [-8.645514, 40.634612], [-8.645557, 40.634588], [-8.645526, 40.634556], [-8.645495, 40.634523], [-8.645465, 40.63449], [-8.645434, 40.634458], [-8.645403, 40.634425], [-8.645372, 40.634393], [-8.645342, 40.63436], [-8.645305, 40.634356], [-8.645274, 40.634323], [-8.645243, 40.63429], [-8.645213, 40.634258], [-8.645176, 40.634253], [-8.645139, 40.634249], [-8.645102, 40.634244], [-8.645066, 40.63424], [-8.645029, 40.634235], [-8.644992, 40.634231], [-8.644956, 40.634226], [-8.644919, 40.634222], [-8.644882, 40.634217], [-8.644845, 40.634213], [-8.644809, 40.634208], [-8.644772, 40.634204], [-8.644735, 40.634199], [-8.644699, 40.634195], [-8.644662, 40.63419], [-8.644631, 40.634158], [-8.644637, 40.634129], [-8.644643, 40.634101], [-8.644649, 40.634073], [-8.644655, 40.634045], [-8.644661, 40.634017], [-8.644667, 40.633989], [-8.644673, 40.633961], [-8.644679, 40.633933], [-8.644685, 40.633905], [-8.644691, 40.633877], [-8.644697, 40.633849], [-8.644703, 40.633821], [-8.644709, 40.633793], [-8.644715, 40.633765], [-8.64472, 40.633737], [-8.644726, 40.633709], [-8.644732, 40.63368], [-8.644738, 40.633652], [-8.644744, 40.633624], [-8.64475, 40.633596], [-8.644756, 40.633568], [-8.644762, 40.63354], [-8.644768, 40.633512], [-8.644774, 40.633484], [-8.64478, 40.633456], [-8.644786, 40.633428], [-8.644792, 40.6334], [-8.644798, 40.633372], [-8.644767, 40.633339], [-8.644773, 40.633311], [-8.644779, 40.633283], [-8.644785, 40.633255], [-8.644791, 40.633227], [-8.644797, 40.633199], [-8.644803, 40.633171], [-8.644809, 40.633143], [-8.644815, 40.633115], [-8.644821, 40.633087], [-8.644827, 40.633059], [-8.644833, 40.633031], [-8.644839, 40.633003], [-8.644845, 40.632974], [-8.64485, 40.632946], [-8.644856, 40.632918], [-8.644862, 40.63289], [-8.644868, 40.632862], [-8.644874, 40.632834], [-8.64488, 40.632806], [-8.644886, 40.632778], [-8.644892, 40.63275], [-8.644898, 40.632722], [-8.644904, 40.632694], [-8.64491, 40.632666], [-8.644916, 40.632638], [-8.644922, 40.63261], [-8.644928, 40.632582], [-8.644934, 40.632554], [-8.64494, 40.632526], [-8.644946, 40.632497], [-8.644952, 40.632469], [-8.644958, 40.632441], [-8.644964, 40.632413], [-8.64497, 40.632385], [-8.644975, 40.632357], [-8.644981, 40.632329], [-8.645024, 40.632306], [-8.645067, 40.632282], [-8.645109, 40.632258], [-8.645152, 40.632235], [-8.645195, 40.632211], [-8.645237, 40.632188], [-8.64528, 40.632164], [-8.645323, 40.632141], [-8.645365, 40.632117], [-8.645408, 40.632094], [-8.645451, 40.63207], [-8.645493, 40.632047], [-8.645536, 40.632023], [-8.645579, 40.632], [-8.645621, 40.631976], [-8.645664, 40.631952], [-8.645707, 40.631929], [-8.645749, 40.631905], [-8.645792, 40.631882], [-8.645835, 40.631858], [-8.645877, 40.631835], [-8.64592, 40.631811], [-8.645957, 40.631816], [-8.645993, 40.63182], [-8.64603, 40.631825], [-8.646067, 40.631829], [-8.646104, 40.631834], [-8.646146, 40.63181], [-8.646183, 40.631815], [-8.64622, 40.631819], [-8.646256, 40.631824], [-8.646293, 40.631828], [-8.64633, 40.631833], [-8.646366, 40.631837], [-8.646403, 40.631842], [-8.64644, 40.631846], [-8.646477, 40.631851], [-8.646513, 40.631855], [-8.64655, 40.63186]], "type": "LineString"}
+    //var geojson_start = {"coordinates": [-8.64477, 40.64025], "type": "Point"}
+    //var geojson_end = {"coordinates": [-8.64655, 40.63186], "type": "Point"}
+	
+	//L.geoJSON(geojson_bounds).addTo(mymap);
+	L.geoJSON(geojson_restZ).addTo(mymap);
+    //L.geoJSON(geojson_path).addTo(mymap);
+    //L.geoJSON(geojson_start).addTo(mymap);
+    //L.geoJSON(geojson_end).addTo(mymap);
+    L.control.scale().addTo(mymap);
+
+    var popup = L.popup();
+
+    var cur_id = ''
+    function setCurId(id) {
+        cur_id = id;
+    }
+
+    function onMapClick(e) {
+        popup
+            .setLatLng(e.latlng)
+            .setContent("GPS coordinates: " + e.latlng.toString().substr(6))
+            .openOn(mymap);
+        if (cur_id != '') {
+            document.getElementById(cur_id).value = e.latlng.toString().substr(6)
+            cur_id = ''
+        }
+    }
+
+    mymap.on('click', onMapClick);
+
+    function pre_compute(name) {
+        var area = "("+mymap.getBounds().getSouth()+","+mymap.getBounds().getWest()+","+mymap.getBounds().getNorth()+","+mymap.getBounds().getEast()+")";
+        var s_loc = document.forms[name]["s_loc"].value;
+        var e_loc = document.forms[name]["e_loc"].value;
+
+        //var checkboxes = document.querySelectorAll('input[type=checkbox]:checked')
+        //for (var i = 0; i < checkboxes.length; i++) {
+        //    array.push(checkboxes[i].value)
+        //}
+
+        var res_build = document.forms[name]["res_build"].checked;
+
+        if (s_loc == '' || e_loc == '' || s_loc == 'click on map' || e_loc == 'click on map') {
+            console.log(" --- Computed nothing!")
+        }else{
+            console.log("Area:" + area.toString() + " | Starting position:" + s_loc.toString() + " | End Position: " + e_loc.toString() +
+            " | Restrict:" + res_build.toString() + " --- Computed everything!")
+            post_pre_data(area,res_build,s_loc,e_loc)
+        }
+    }
+    function post_pre_data(area,res_build,s_loc,e_loc) {
+        $.ajax({
+            type: "POST",
+            url: "http://127.0.0.1:5000/pre_compute",
+            data: { area: area, restric: res_build, s_loc: s_loc, e_loc: e_loc},
+            success: callbackFunc
+        });
+    }
+
+    function compute(name1,name2) {
+        var area = "("+mymap.getBounds().getSouth().toFixed(6)+","+mymap.getBounds().getWest().toFixed(6)+","+mymap.getBounds().getNorth().toFixed(6)+","+mymap.getBounds().getEast().toFixed(6)+")";
+        var s_loc = document.forms[name1]["s_loc"].value;
+        var e_loc = document.forms[name1]["e_loc"].value;
+
+        var restric = []
+        var checkboxes = document.querySelectorAll('input[type=checkbox]:checked')
+        for (var i = 0; i < checkboxes.length; i++) {
+            restric.push(checkboxes[i].value)
+        }
+
+        var g_granu = document.forms[name2]["gran_slider"].value*50;
+        var g_margin = document.forms[name2]["margin_slider"].value;
+
+
+        if (s_loc == '' || e_loc == '' || s_loc == 'click on map' || e_loc == 'click on map') {
+            console.log(" --- Computed nothing!")
+        }else{
+            console.log("Area:" + area.toString() +
+            " | Starting position:" + s_loc.toString() +
+            " | End Position: " + e_loc.toString() +
+            " | Restrict:" + restric.toString()+
+            " | Granularity:" + g_granu.toString() +
+            " | Margin level:" + g_margin.toString() + "--- Computed everything!")
+            post_data(area,restric,s_loc,e_loc,g_granu,g_margin)
+        }
+    }
+
+    function post_data(area,restric,s_loc,e_loc, g_granu, g_margin) {
+        $.ajax({
+            type: "POST",
+            url: "http://127.0.0.1:5000/compute_rest",
+            data: { s_loc: s_loc, e_loc: e_loc},
+            success: callbackFunc2
+        });
+    }
+
+
+    var g_distance = 0
+
+    function callbackFunc(response) {
+        console.log(response);
+        g_distance = response['distance'];
+        var di = document.getElementById("distance");
+        di.innerHTML = "Distance: " + response['distance'] +" meters";
+        di.style.visibility = "visible";
+        document.getElementById("sliders").style.visibility = "visible";
+        document.getElementById("gran_slider").style.visibility = "visible";
+        document.getElementById("gran_output").style.visibility = "visible";
+        mymap.setView(new L.LatLng(parseFloat(response['center_lock_lat']),parseFloat(response['center_lock_lng'])),parseInt(response['zoom']));
+    }
+
+    var s;
+    var e;
+    var p;
+
+    function callbackFunc2(response) {
+        console.log(response);
+        var geojson_start = response[0]
+        var geojson_end = response[1]
+        var geojson_path = response[2]
+
+        if (s != null){
+            mymap.removeLayer(s)
+            s = L.geoJSON(geojson_start)
+            s.addTo(mymap)
+            mymap.removeLayer(e)
+            e = L.geoJSON(geojson_end)
+            e.addTo(mymap)
+            mymap.removeLayer(p)
+            p = L.geoJSON(geojson_path)
+            p.addTo(mymap)
+        }else{
+            s = L.geoJSON(geojson_start)
+            s.addTo(mymap);
+            e = L.geoJSON(geojson_end)
+            e.addTo(mymap);
+            p = L.geoJSON(geojson_path)
+            p.addTo(mymap);
+        }
+        window.location.hash = "results";
+        var results = response[3]
+        document.getElementById("results").style.visibility = "visible"
+
+
+        document.getElementById("total_distance").innerHTML = 'Total Distance: ' + results['total_dist'].toFixed(2) + ' meters';
+        document.getElementById("total_distance2x").innerHTML = 'Total Distance: ' + (results['total_dist']*2).toFixed(2) + ' meters';
+
+
+        var date = new Date(0);
+        date.setSeconds(results['travel_time_10ms_min']); // specify value for SECONDS here
+        var timeString = date.toISOString().substr(11, 8);
+
+        document.getElementById("travel_time").innerHTML = 'Travel Time (at 10 m/s): ' + timeString + ' minutes';
+
+        var date2x = new Date(0);
+        date2x.setSeconds(results['travel_time_10ms_min']*2); // specify value for SECONDS here
+        var timeString2x = date2x.toISOString().substr(11, 8);
+
+        document.getElementById("travel_time2x").innerHTML = 'Travel Time (at 10 m/s): ' + timeString2x + ' minutes';
+        }
+    </script>
+
+    <!--sliders-->
+    <script>
+    var slider = document.getElementById("gran_slider");
+    var output = document.getElementById("gran_output");
+    document.getElementById("gran_output").innerHTML = "Granularity: - meters"; // Display the default slider value
+
+    // Update the current slider value (each time you drag the slider handle)
+
+    var g_granu = 0
+    var g_margin = 0
+    slider.oninput = function() {
+        g_granu = (g_distance/(this.value*50)).toFixed(2)
+        document.getElementById("gran_output").innerHTML = "Granularity: "+ (g_distance/(this.value*50)).toFixed(2) + " meters";
+        document.getElementById("margin_output").innerHTML = "Margin: " + (g_granu*g_margin).toFixed(2) + " meters";
+        document.getElementById("margin_slider").style.visibility = "visible";
+        document.getElementById("margin_output").style.visibility = "visible";
+    }
+    
+    var slider = document.getElementById("margin_slider");
+    var output = document.getElementById("margin_output");
+    document.getElementById("margin_output").innerHTML = "Margin: - meters";
+
+    // Update the current slider value (each time you drag the slider handle)
+    slider.oninput = function() {
+        g_margin = this.value;
+        document.getElementById("margin_output").innerHTML = "Margin: " + (g_granu*this.value).toFixed(2) + " meters";
+        document.getElementById("computeB").style.visibility = "visible";
+    }
+    </script>
+
+</body>
+</html>
