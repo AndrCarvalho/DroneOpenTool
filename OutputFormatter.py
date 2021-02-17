@@ -17,7 +17,7 @@ def path_to_html(name,area,missionGrid,path,margin_lvl,method):
         zoom = 15
 
     path_geojson = geojson.LineString([(p[1], p[0]) for p in path])
-    f = open("PaperComp/"+str(name) + "_" + str(missionGrid['n_points']) + "_" + str(margin_lvl) + "_" +str(method) +".html", "w")
+    f = open(str(name) + "_" + str(missionGrid['n_points']) + "_" + str(margin_lvl) + "_" +str(method) +".html", "w")
     f.write(
         """<html>
         <head>

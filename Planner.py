@@ -5,7 +5,7 @@ import pyproj
 
 geodesic = pyproj.Geod(ellps='WGS84') #notice: [lon lat] notation!!!
 
-def construct_grid_graph(listNodes, restricted_dic, margin):
+def construct_grid_graph(listNodes, restricted_dic, margin, obstacle_weight=10000):
     n_points = listNodes["n_points"]
     graph = nx.grid_2d_graph(round(n_points/2)+1,n_points)
 
@@ -26,7 +26,7 @@ def construct_grid_graph(listNodes, restricted_dic, margin):
 
     for restric_key in restricted_dic.keys():
         for i in restricted_dic[restric_key]:
-            update_weights(graph, i, margin, 10000)
+            update_weights(graph, i, margin, obstacle_weight)
         '''
     for i in restricted_dic['watAreas']:
         # Graph.remove_node(i)

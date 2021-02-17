@@ -25,6 +25,7 @@ def isInsideRestriction(lat, lon, way_nodes):
 
 #DONE: Function to evaluate if a chosen point is inside of any of ALL queried restrictions - return True for in | False for outside
 def isInsideGLOBAL(lat, lon, all_ways):
+    #print((lat,lon),all_ways)
     for way in all_ways:
         if isInsideRestriction(lat, lon, way.nodes):
             #print("It's inside:", lat, ",", lon)

@@ -6,7 +6,6 @@ import Planner as PL
 import RestrictionChecker as RC
 import Optimizer as OP
 import OutputFormatter as OF
-
 import networkx.readwrite as R_W
 
 
@@ -17,9 +16,10 @@ import networkx.readwrite as R_W
 #   -> granularity = integer[2 - ∞ ] :: Don't try over-exaggerated number:: (recommended 12 to 1500)
 #   -> marginlvl = integer[0 - ∞ ] :: Don't try over-exaggerated number::  (recommended 0 to 5)
 #   -> restrictions = list('restriction name', ... ) :: Possible values ['buildings',  'airways', 'residential', 'water', 'woods', 'military'] ::
+#   -> area = (south,west,north,east) (default None) :: 4-tuple of coordinates to define a rectangular area ::
 #   -> obstacle_weight = integer [0 - ∞] (default 10000) :: importance of the obstacles ::
 
-def online_runner(name, start, goal, granularity, marginlvl, restrictions, obstacle_weight=10000):
+def offline_runner(name, start, goal, granularity, marginlvl, restrictions, area=None, obstacle_weight=10000):
     start_start = datetime.now()
     print(start_start)
 
@@ -30,9 +30,10 @@ def online_runner(name, start, goal, granularity, marginlvl, restrictions, obsta
 
     ### Fetch restrictions
     # (south,west,north,east)
-    e = 0.0001  # latch inclusion
-    lats, lons = [tup[0] for tup in missionGrid['bounds']], [tup[1] for tup in missionGrid['bounds']]
-    area = (min(lats) - e, min(lons) - e, max(lats) + e, max(lons) + e)
+    if area is None:
+        e = 0.0001  # latch inclusion
+        lats, lons = [tup[0] for tup in missionGrid['bounds']], [tup[1] for tup in missionGrid['bounds']]
+        area = (min(lats) - e, min(lons) - e, max(lats) + e, max(lons) + e)
 
     restriction_dict = {}
     for restr in restrictions:
@@ -40,18 +41,23 @@ def online_runner(name, start, goal, granularity, marginlvl, restrictions, obsta
             nodes, ways = DC.collect_OSM_data(restr, area)
             restr_name = restr + '_ways'
             restriction_dict[restr_name] = ways
+            #print(len(ways), ways)
         except:
             print("Not included restr " + restr)
 
     end_OSM = datetime.now()
 
+    restricted_points = {}
+    for restr in restriction_dict.keys():
+        restricted_points[restr] = RC.inv_node_filter(missionGrid, restriction_dict[restr])
+
     end_res = datetime.now()
     print("Problem Structure: Collected")
 
     ### Generate a graph from the problem structure
-    Graph = PL.construct_grid_graph(missionGrid, {}, marginlvl)  # dynamic
+    Graph = PL.construct_grid_graph(missionGrid, restricted_points, marginlvl, obstacle_weight)
 
-    # R_W.write_gpickle(Graph,"saves\Online\"+name+".grx") # needed in online ? parameter?
+    R_W.write_gpickle(Graph, name + "_gran"+ str(granularity)+"_mlvl"+str(marginlvl)+"--obs"+str(obstacle_weight)+".grx")
     end_contructG = datetime.now()
 
     ### Search/Plan path
@@ -83,8 +89,6 @@ def online_runner(name, start, goal, granularity, marginlvl, restrictions, obsta
                 check = True
                 name += '[X]'
 
-    # print('\n'.join(str(line)[1:-1] for line in num_decarted_nodes))
-
     end_planningPath = datetime.now()
 
     Path = OP.optimize_path(Path)
@@ -103,9 +107,6 @@ def online_runner(name, start, goal, granularity, marginlvl, restrictions, obsta
     print("Optimizing Path", str(end_smoothingPath - end_planningPath))
     print("Total time:", str(end_end - start_start))
 
-    OF.path_to_html(name, area, missionGrid, Path, marginlvl, "di")
+    OF.path_to_html(name, area, missionGrid, Path, marginlvl, "stat")
 
     print("Done")
-
-
-# online_runner("Testing_Online_Runner", (38.6371, -9.0195), (38.5816, -9.0444), 200, 3, ['buildings', 'woods'])
