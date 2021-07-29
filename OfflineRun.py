@@ -61,7 +61,7 @@ def offline_runner(name, start, goal, granularity, marginlvl, restrictions, area
     end_contructG = datetime.now()
 
     ### Search/Plan path
-
+    print("Planning...")
     Path = PL.a_star_path_cost(missionGrid, Graph)
 
     ### Check if the path violates any restrictions [in dynamic: updates costs of restricted nodes whenever it finds them]-- rename funtion to "repath"
@@ -85,7 +85,7 @@ def offline_runner(name, start, goal, granularity, marginlvl, restrictions, area
             oldPath = Path
             Path = PL.a_star_path_cost(missionGrid, Graph)
             if Path == oldPath:
-                print("Same output ...")
+                #print("Same output ...")
                 check = True
                 name += '[X]'
 
@@ -95,13 +95,13 @@ def offline_runner(name, start, goal, granularity, marginlvl, restrictions, area
 
     end_smoothingPath = datetime.now()
 
-    print("--Final Path--", str(end_planningPath - end_contructG))
-    print("-num descarted nodes:", len(num_decarted_nodes))
+    #print("--Final Path--", str(end_planningPath - end_contructG))
+    #print("-num discarded nodes:", len(num_decarted_nodes))
     end_end = datetime.now()
 
     print("Creating Grid:", str(end_Grid - start_start))
     print("Collecting OSM data:", str(end_OSM - end_Grid))
-    print("Restrited points:", str(end_res - end_OSM))
+    print("Restricted points:", str(end_res - end_OSM))
     print("Constructing Graph:", str(end_contructG - end_res))
     print("Path Planning:", str(end_planningPath - end_contructG))
     print("Optimizing Path", str(end_smoothingPath - end_planningPath))

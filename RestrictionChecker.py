@@ -65,7 +65,7 @@ def path_check_good(path,ways):
         if isInsideGLOBAL(node[0], node[1], ways):
             unwanted_nodes.append(node)
     if unwanted_nodes:
-        print("nw:", len(unwanted_nodes))
+        #print("nw:", len(unwanted_nodes))
         return False, unwanted_nodes
-    print("w:",len(unwanted_nodes))
+    #print("w:",len(unwanted_nodes))
     return True, unwanted_nodes

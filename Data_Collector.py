@@ -9,6 +9,7 @@ RESTRICTIONS = {'buildings': """ "building" """,
                 'military': """ "landuse"="military" """
                 }
 
+
 def collect_OSM_data(restr, area):
     api = overpy.Overpass()
 
@@ -48,14 +49,17 @@ def collect_OSM_data(restr, area):
     print("Number of " + restr + ":", len(ways))
     return nodes, ways
 
-def aux_get_element(id,list):
+
+def aux_get_element(id, list):
     for i in list:
         if id == i.id:
             return i
 
+
 def print_all_nodesCollected(list_nodes):
     for num, node in enumerate(list_nodes):
         print(str(num) + " -> lat=", node.lat, " | lon=", node.lon)
+
 
 '''
 def collectBuildings_OSM_data(squared_area):

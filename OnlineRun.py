@@ -55,7 +55,7 @@ def online_runner(name, start, goal, granularity, marginlvl, restrictions, obsta
     end_contructG = datetime.now()
 
     ### Search/Plan path
-
+    print("Planning...")
     Path = PL.a_star_path_cost(missionGrid, Graph)
 
     ### Check if the path violates any restrictions [in dynamic: updates costs of restricted nodes whenever it finds them]-- rename funtion to "repath"
@@ -79,7 +79,7 @@ def online_runner(name, start, goal, granularity, marginlvl, restrictions, obsta
             oldPath = Path
             Path = PL.a_star_path_cost(missionGrid, Graph)
             if Path == oldPath:
-                print("Same output ...")
+                #print("Same output ...")
                 check = True
                 name += '[X]'
 
@@ -91,13 +91,13 @@ def online_runner(name, start, goal, granularity, marginlvl, restrictions, obsta
 
     end_smoothingPath = datetime.now()
 
-    print("--Final Path--", str(end_planningPath - end_contructG))
-    print("-num descarted nodes:", len(num_decarted_nodes))
+    #print("--Final Path--", str(end_planningPath - end_contructG))
+    #print("-num discarded nodes:", len(num_decarted_nodes))
     end_end = datetime.now()
 
     print("Creating Grid:", str(end_Grid - start_start))
     print("Collecting OSM data:", str(end_OSM - end_Grid))
-    print("Restrited points:", str(end_res - end_OSM))
+    print("Restricted points:", str(end_res - end_OSM))
     print("Constructing Graph:", str(end_contructG - end_res))
     print("Path Planning:", str(end_planningPath - end_contructG))
     print("Optimizing Path", str(end_smoothingPath - end_planningPath))
@@ -105,7 +105,7 @@ def online_runner(name, start, goal, granularity, marginlvl, restrictions, obsta
 
     OF.path_to_html(name, area, missionGrid, Path, marginlvl, "di")
 
-    print("Done")
+    print("Success!")
 
 
-# online_runner("Testing_Online_Runner", (38.6371, -9.0195), (38.5816, -9.0444), 200, 3, ['buildings', 'woods'])
+#online_runner("Testing_Online_Runner", (38.6371, -9.0195), (38.5816, -9.0444), 200, 3, ['buildings'])

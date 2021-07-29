@@ -54,7 +54,11 @@
                     <label id="margin_output" for="margin_slider" style="visibility: hidden"> Margin: 10</label><br>
                 </div>
             </form>
-            <button type="button" id="computeB" form="form_gran_mar" onclick="compute('form_map','form_gran_mar')" class="custom-button custom-button-accent" style="visibility: hidden">Compute</button>
+            <button type="button" id="computeB" form="form_gran_mar" onclick="compute('form_map','form_gran_mar')" class="custom-button custom-button-accent" style="visibility: hidden">
+                 <span class="button__text">Compute</span>
+                <div id="computeL" class="">
+                </div>
+            </button>
         </div>
 
         <div class="container" id="results" style="visibility: hidden">

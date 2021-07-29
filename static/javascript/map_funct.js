@@ -85,6 +85,8 @@ function compute(name1,name2) {
 }
 
 function post_data(area,restric,s_loc,e_loc, g_granu, g_margin) {
+    var element = document.getElementById("computeL");
+    element.classList.add("button--loading");
     $.ajax({
         type: "POST",
         url: "http://127.0.0.1:5000/compute_rest",
@@ -136,6 +138,8 @@ function callbackFunc2(response) {
         p = L.geoJSON(geojson_path)
         p.addTo(mymap);
     }
+    var element = document.getElementById("computeL");
+    element.classList.remove("button--loading");
     window.location.hash = "results";
     var results = response[3]
     document.getElementById("results").style.visibility = "visible"

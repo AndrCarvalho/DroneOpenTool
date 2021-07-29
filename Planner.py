@@ -22,7 +22,7 @@ def construct_grid_graph(listNodes, restricted_dic, margin, obstacle_weight=1000
 
     nx.relabel_nodes(graph,dict_label,False)
 
-    print("Updating.. Margin:",margin,"-", str(margin*listNodes["neighbour"]))
+    print("Margin:",margin,"-", str(margin*listNodes["neighbour"]))
 
     for restric_key in restricted_dic.keys():
         for i in restricted_dic[restric_key]:
@@ -32,7 +32,7 @@ def construct_grid_graph(listNodes, restricted_dic, margin, obstacle_weight=1000
         # Graph.remove_node(i)
         update_weights(graph, i, margin, 10000)
     '''
-    print("Updating..Over")
+    print("Structure Complete")
 
     return graph
 
