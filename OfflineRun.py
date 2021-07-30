@@ -19,7 +19,7 @@ import networkx.readwrite as R_W
 #   -> area = (south,west,north,east) (default None) :: 4-tuple of coordinates to define a rectangular area ::
 #   -> obstacle_weight = integer [0 - ∞] (default 10000) :: importance of the obstacles ::
 
-def offline_runner(name, start, goal, granularity, marginlvl, restrictions, area=None, obstacle_weight=10000):
+def offline_runner(name, start, goal, granularity, marginlvl, restrictions, area=None, obstacle_weight=10000, output="html"):
     start_start = datetime.now()
     print(start_start)
 
@@ -107,6 +107,11 @@ def offline_runner(name, start, goal, granularity, marginlvl, restrictions, area
     print("Optimizing Path", str(end_smoothingPath - end_planningPath))
     print("Total time:", str(end_end - start_start))
 
-    OF.path_to_html(name, area, missionGrid, Path, marginlvl, "stat")
+    if output == "html":
+        OF.path_to_html(name, area, missionGrid, Path, marginlvl, "stat")
+    elif output == "geojson":
+        OF.path_to_geojson(name, missionGrid, Path, marginlvl, "stat")
+    else:
+        print("Something went wrong...")
 
-    print("Done")
+    print("Success!")

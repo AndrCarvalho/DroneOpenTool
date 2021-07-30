@@ -78,7 +78,7 @@ def path_to_geojson(name,missionGrid,path,margin_lvl,method):
     end_geojson = geojson.Point((missionGrid['end'][1], missionGrid['end'][0]))
 
     path_geojson = geojson.LineString([(p[1], p[0]) for p in path])
-    f = open("Demo Results/"+str(name) + "_" + str(missionGrid['n_points']) + "_" + str(margin_lvl) + "_" +str(method) +".geojson", "w")
+    f = open(str(name) + "_" + str(missionGrid['n_points']) + "_" + str(margin_lvl) + "_" +str(method) +".geojson", "w")
     f.write(str(path_geojson) +"\n"+
             str(start_geojson)+"\n"+
             str(end_geojson))

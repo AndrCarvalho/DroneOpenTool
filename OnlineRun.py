@@ -19,7 +19,7 @@ import networkx.readwrite as R_W
 #   -> restrictions = list('restriction name', ... ) :: Possible values ['buildings',  'airways', 'residential', 'water', 'woods', 'military'] ::
 #   -> obstacle_weight = integer [0 - ∞] (default 10000) :: importance of the obstacles ::
 
-def online_runner(name, start, goal, granularity, marginlvl, restrictions, obstacle_weight=10000):
+def online_runner(name, start, goal, granularity, marginlvl, restrictions, obstacle_weight=10000, output="html"):
     start_start = datetime.now()
     print(start_start)
 
@@ -104,6 +104,13 @@ def online_runner(name, start, goal, granularity, marginlvl, restrictions, obsta
     print("Total time:", str(end_end - start_start))
 
     OF.path_to_html(name, area, missionGrid, Path, marginlvl, "di")
+
+    if output == "html":
+        OF.path_to_html(name, area, missionGrid, Path, marginlvl, "stat")
+    elif output == "geojson":
+        OF.path_to_geojson(name, missionGrid, Path, marginlvl, "stat")
+    else:
+        print("Something went wrong...")
 
     print("Success!")
 
