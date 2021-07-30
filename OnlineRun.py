@@ -103,12 +103,10 @@ def online_runner(name, start, goal, granularity, marginlvl, restrictions, obsta
     print("Optimizing Path", str(end_smoothingPath - end_planningPath))
     print("Total time:", str(end_end - start_start))
 
-    OF.path_to_html(name, area, missionGrid, Path, marginlvl, "di")
-
     if output == "html":
-        OF.path_to_html(name, area, missionGrid, Path, marginlvl, "stat")
+        OF.path_to_html(name, area, missionGrid, Path, marginlvl, "di")
     elif output == "geojson":
-        OF.path_to_geojson(name, missionGrid, Path, marginlvl, "stat")
+        OF.path_to_geojson(name, missionGrid, Path, marginlvl, "di")
     else:
         print("Something went wrong...")
 
