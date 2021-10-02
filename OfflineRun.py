@@ -21,6 +21,7 @@ import networkx.readwrite as R_W
 
 def offline_runner(name, start, goal, granularity, marginlvl, restrictions, area=None, obstacle_weight=10000, output="html"):
     start_start = datetime.now()
+    print("> Mission details:")
     print(start_start)
 
     ### Create the problem structure
@@ -34,7 +35,9 @@ def offline_runner(name, start, goal, granularity, marginlvl, restrictions, area
         e = 0.0001  # latch inclusion
         lats, lons = [tup[0] for tup in missionGrid['bounds']], [tup[1] for tup in missionGrid['bounds']]
         area = (min(lats) - e, min(lons) - e, max(lats) + e, max(lons) + e)
+    missionGrid['outline'] = area
 
+    print("> Restrictions:")
     restriction_dict = {}
     for restr in restrictions:
         try:
@@ -52,7 +55,7 @@ def offline_runner(name, start, goal, granularity, marginlvl, restrictions, area
         restricted_points[restr] = RC.inv_node_filter(missionGrid, restriction_dict[restr])
 
     end_res = datetime.now()
-    print("Problem Structure: Collected")
+    print("> Problem Restrictions: Collected")
 
     ### Generate a graph from the problem structure
     Graph = PL.construct_grid_graph(missionGrid, restricted_points, marginlvl, obstacle_weight)
@@ -61,7 +64,7 @@ def offline_runner(name, start, goal, granularity, marginlvl, restrictions, area
     end_contructG = datetime.now()
 
     ### Search/Plan path
-    print("Planning...")
+    print("> Planning...")
     Path = PL.a_star_path_cost(missionGrid, Graph)
 
     ### Check if the path violates any restrictions [in dynamic: updates costs of restricted nodes whenever it finds them]-- rename funtion to "repath"
@@ -90,7 +93,7 @@ def offline_runner(name, start, goal, granularity, marginlvl, restrictions, area
                 name += '[X]'
 
     end_planningPath = datetime.now()
-
+    print("> Optimization")
     Path = OP.optimize_path(Path)
 
     end_smoothingPath = datetime.now()
@@ -98,20 +101,20 @@ def offline_runner(name, start, goal, granularity, marginlvl, restrictions, area
     #print("--Final Path--", str(end_planningPath - end_contructG))
     #print("-num discarded nodes:", len(num_decarted_nodes))
     end_end = datetime.now()
-
+    print("> Task time results (hh:mm:ss:mm)")
     print("Creating Grid:", str(end_Grid - start_start))
     print("Collecting OSM data:", str(end_OSM - end_Grid))
-    print("Restricted points:", str(end_res - end_OSM))
+    print("Restricted Points:", str(end_res - end_OSM))
     print("Constructing Graph:", str(end_contructG - end_res))
     print("Path Planning:", str(end_planningPath - end_contructG))
     print("Optimizing Path", str(end_smoothingPath - end_planningPath))
     print("Total time:", str(end_end - start_start))
 
     if output == "html":
-        OF.path_to_html(name, area, missionGrid, Path, marginlvl, "stat")
+        OF.path_to_html(name, area, missionGrid, Path, marginlvl, "offline")
     elif output == "geojson":
-        OF.path_to_geojson(name, missionGrid, Path, marginlvl, "stat")
+        OF.path_to_geojson(name, missionGrid, Path, marginlvl, "offline")
     else:
         print("Something went wrong...")
 
-    print("Success!")
+    print("\nSuccess!")

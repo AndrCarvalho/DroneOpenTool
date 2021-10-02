@@ -21,6 +21,7 @@ import networkx.readwrite as R_W
 
 def online_runner(name, start, goal, granularity, marginlvl, restrictions, obstacle_weight=10000, output="html"):
     start_start = datetime.now()
+    print("> Mission details:")
     print(start_start)
 
     ### Create the problem structure
@@ -33,7 +34,9 @@ def online_runner(name, start, goal, granularity, marginlvl, restrictions, obsta
     e = 0.0001  # latch inclusion
     lats, lons = [tup[0] for tup in missionGrid['bounds']], [tup[1] for tup in missionGrid['bounds']]
     area = (min(lats) - e, min(lons) - e, max(lats) + e, max(lons) + e)
+    missionGrid['outline'] = area
 
+    print("> Restrictions:")
     restriction_dict = {}
     for restr in restrictions:
         try:
@@ -46,7 +49,7 @@ def online_runner(name, start, goal, granularity, marginlvl, restrictions, obsta
     end_OSM = datetime.now()
 
     end_res = datetime.now()
-    print("Problem Structure: Collected")
+    print("> Problem Restrictions: Collected")
 
     ### Generate a graph from the problem structure
     Graph = PL.construct_grid_graph(missionGrid, {}, marginlvl)  # dynamic
@@ -55,7 +58,7 @@ def online_runner(name, start, goal, granularity, marginlvl, restrictions, obsta
     end_contructG = datetime.now()
 
     ### Search/Plan path
-    print("Planning...")
+    print("> Planning...")
     Path = PL.a_star_path_cost(missionGrid, Graph)
 
     ### Check if the path violates any restrictions [in dynamic: updates costs of restricted nodes whenever it finds them]-- rename funtion to "repath"
@@ -83,10 +86,11 @@ def online_runner(name, start, goal, granularity, marginlvl, restrictions, obsta
                 check = True
                 name += '[X]'
 
+    print("Points filtered:", len(num_decarted_nodes))
     # print('\n'.join(str(line)[1:-1] for line in num_decarted_nodes))
 
     end_planningPath = datetime.now()
-
+    print("> Optimization")
     Path = OP.optimize_path(Path)
 
     end_smoothingPath = datetime.now()
@@ -94,23 +98,21 @@ def online_runner(name, start, goal, granularity, marginlvl, restrictions, obsta
     #print("--Final Path--", str(end_planningPath - end_contructG))
     #print("-num discarded nodes:", len(num_decarted_nodes))
     end_end = datetime.now()
-
+    print("> Task time results (hh:mm:ss:mm)")
     print("Creating Grid:", str(end_Grid - start_start))
     print("Collecting OSM data:", str(end_OSM - end_Grid))
-    print("Restricted points:", str(end_res - end_OSM))
+    print("Restricted Points:", str(end_res - end_OSM))
     print("Constructing Graph:", str(end_contructG - end_res))
     print("Path Planning:", str(end_planningPath - end_contructG))
     print("Optimizing Path", str(end_smoothingPath - end_planningPath))
     print("Total time:", str(end_end - start_start))
 
     if output == "html":
-        OF.path_to_html(name, area, missionGrid, Path, marginlvl, "di")
+        OF.path_to_html(name, area, missionGrid, Path, marginlvl, "online")
     elif output == "geojson":
-        OF.path_to_geojson(name, missionGrid, Path, marginlvl, "di")
+        OF.path_to_geojson(name, missionGrid, Path, marginlvl, "online")
     else:
         print("Something went wrong...")
 
-    print("Success!")
+    print("\nSuccess!")
 
-
-#online_runner("Testing_Online_Runner", (38.6371, -9.0195), (38.5816, -9.0444), 200, 3, ['buildings'])

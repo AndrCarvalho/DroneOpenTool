@@ -23,6 +23,14 @@
     <div class="core">
         <div id="mapid" class="map"></div>
         <div class="variables">
+            <!--
+            <div class="help-tip">
+                <p>This is the demo online version of the Web App interface for DroneOpenStreetMap tool!<br><br>
+                    It is limited to the surroundings of our campus and fixed parameters due to the resources we can use on pythonanywhere for free.<br><br>
+                    Hope you liked it!
+                </p>
+            </div>
+            -->
             <form id="form_map" class="form_map">
                 <label for="s_loc">Starting Location:</label>
                 <input type="text" id="s_loc" name="s_loc" readonly onfocus="value='click on map'" onBlur="setCurId(this.id)"><br><br>
@@ -64,16 +72,20 @@
         <div class="container" id="results" style="visibility: hidden">
             <div class="details">
                 <h3>Start-Goal</h3>
+                <!--<p id="debug">cu</p>-->
                 <p id="total_distance">Total Distance: </p>
                 <p id="travel_time">Travel Time (at 10 m/s): </p>
-                <p>next</p>
+                <p id="precision">Mission precision: </p>
             </div>
-            <div class="details">
+            <button type="button" class="custom-button custom-button-accent">
+                <span class="button__text">Download Trajectory</span>
+            </button>
+            <!--<div class="details">
                 <h3>Start-Goal-Start</h3>
                 <p id="total_distance2x">Total Distance: </p>
                 <p id="travel_time2x">Travel Time (at 10 m/s): </p>
-                <p>next</p>
-            </div>
+                <p id="precision2x">Mission precision: </p>
+            </div>-->
         </div>
     </div>
 

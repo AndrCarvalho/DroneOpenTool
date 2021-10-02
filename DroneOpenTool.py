@@ -47,7 +47,7 @@ if __name__ == "__main__":
                           choices=['buildings', 'airways', 'residential', 'water', 'woods', 'military'], nargs="+",
                           type=str,
                           help="list of restriction type e.g.['buildings',  'airways', 'residential', 'water', "
-                               "'woods', 'military'] (add multiple --restr restriction if more than 1)")
+                               "'woods', 'military'] (you  can add multiple restrictions after --restr)")
     c_params.add_argument('--area', metavar='area', required=False,
                           help="custom defined rectangular area: (south,west,north,east)")
     c_params.add_argument('--obs_weight', metavar='weight', required=False, type=int, default=10000,

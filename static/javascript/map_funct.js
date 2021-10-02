@@ -1,16 +1,18 @@
 var mymap = L.map('mapid')
-.setView([38.736806, -9.29845],15);
+//.setView([38.736806, -9.29845],15);
+.setView([59.332136, 18.070979],15);
 //console.log(mymap)
 
 L.tileLayer('https://{s}.tile.openstreetmap.de/tiles/osmde/{z}/{x}/{y}.png', {
     maxZoom: 18,
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 }).addTo(mymap);
+L.control.scale().addTo(mymap)
 
-var geojson_restZ = {"coordinates": [[-9.3160717488681, 38.7440489063467], [-9.2802097488681, 38.7440489063467], [-9.280206251473, 38.7300610852626], [-9.316068251473, 38.7300610852626], [-9.3160717488681, 38.7440489063467]], "type": "LineString"}
+//var geojson_restZ = {"coordinates": [[-9.3160717488681, 38.7440489063467], [-9.2802097488681, 38.7440489063467], [-9.280206251473, 38.7300610852626], [-9.316068251473, 38.7300610852626], [-9.3160717488681, 38.7440489063467]], "type": "LineString"}
 
-L.geoJSON(geojson_restZ).addTo(mymap);
-L.control.scale().addTo(mymap);
+//L.geoJSON(geojson_restZ).addTo(mymap);
+//L.control.scale().addTo(mymap);
 
 var popup = L.popup();
 
@@ -61,10 +63,10 @@ function compute(name1,name2) {
     var s_loc = document.forms[name1]["s_loc"].value;
     var e_loc = document.forms[name1]["e_loc"].value;
 
-    var restric = []
+    var restric = ""
     var checkboxes = document.querySelectorAll('input[type=checkbox]:checked')
     for (var i = 0; i < checkboxes.length; i++) {
-        restric.push(checkboxes[i].value)
+        restric += "," + checkboxes[i].value;
     }
 
     var g_granu = document.forms[name2]["gran_slider"].value*50;
@@ -83,14 +85,25 @@ function compute(name1,name2) {
         post_data(area,restric,s_loc,e_loc,g_granu,g_margin)
     }
 }
-
-function post_data(area,restric,s_loc,e_loc, g_granu, g_margin) {
+// Limited version
+function post_data_rest(area,restric,s_loc,e_loc, g_granu, g_margin) {
     var element = document.getElementById("computeL");
     element.classList.add("button--loading");
     $.ajax({
         type: "POST",
         url: "http://127.0.0.1:5000/compute_rest",
         data: { s_loc: s_loc, e_loc: e_loc},
+        success: callbackFunc2
+    });
+}
+
+function post_data(area, restric, s_loc, e_loc, g_granu, g_margin) {
+    var element = document.getElementById("computeL");
+    element.classList.add("button--loading");
+    $.ajax({
+        type: "POST",
+        url: "http://127.0.0.1:5000/compute",
+        data: { area: area, restric: restric, s_loc: s_loc, e_loc: e_loc, g_granu: g_granu, g_margin: g_margin},
         success: callbackFunc2
     });
 }
@@ -113,40 +126,56 @@ function callbackFunc(response) {
 var s;
 var e;
 var p;
+var r;
+var b;
 
 function callbackFunc2(response) {
     //console.log(response);
     var geojson_start = response[0]
     var geojson_end = response[1]
     var geojson_path = response[2]
+    var geojson_resarea = response[3]
+    var geojson_bounds = response[4]
 
     if (s != null){
-        mymap.removeLayer(s)
-        s = L.geoJSON(geojson_start)
-        s.addTo(mymap)
-        mymap.removeLayer(e)
-        e = L.geoJSON(geojson_end)
-        e.addTo(mymap)
-        mymap.removeLayer(p)
-        p = L.geoJSON(geojson_path)
-        p.addTo(mymap)
-    }else{
-        s = L.geoJSON(geojson_start)
+        mymap.removeLayer(s);
+        s = L.geoJSON(geojson_start);
         s.addTo(mymap);
-        e = L.geoJSON(geojson_end)
+        mymap.removeLayer(e);
+        e = L.geoJSON(geojson_end);
         e.addTo(mymap);
-        p = L.geoJSON(geojson_path)
+        mymap.removeLayer(p);
+        p = L.geoJSON(geojson_path);
         p.addTo(mymap);
+        mymap.removeLayer(r);
+        r = L.geoJSON(geojson_resarea,{ color: 'red', opacity:0.2 }).addTo(mymap);
+        r.addTo(mymap);
+        mymap.removeLayer(b);
+        b = L.geoJSON(geojson_bounds,{ dashArray: '5,5', color: 'black', opacity:0.6 }).addTo(mymap);
+        b.addTo(mymap);
+    }else{
+        s = L.geoJSON(geojson_start);
+        s.addTo(mymap);
+        e = L.geoJSON(geojson_end);
+        e.addTo(mymap);
+        p = L.geoJSON(geojson_path);
+        p.addTo(mymap);
+        r = L.geoJSON(geojson_resarea,{ color: 'red', opacity:0.2 }).addTo(mymap);
+        r.addTo(mymap);
+        b = L.geoJSON(geojson_bounds,{ dashArray: '5,5', color: 'black', opacity:0.6 }).addTo(mymap);
+        b.addTo(mymap);
     }
     var element = document.getElementById("computeL");
     element.classList.remove("button--loading");
     window.location.hash = "results";
-    var results = response[3]
+    var results = response[5]
+
     document.getElementById("results").style.visibility = "visible"
 
+    //document.getElementById("debug").innerHTML = JSON.stringify(results);
 
     document.getElementById("total_distance").innerHTML = 'Total Distance: ' + results['total_dist'].toFixed(2) + ' meters';
-    document.getElementById("total_distance2x").innerHTML = 'Total Distance: ' + (results['total_dist']*2).toFixed(2) + ' meters';
+    //document.getElementById("total_distance2x").innerHTML = 'Total Distance: ' + (results['total_dist']*2).toFixed(2) + ' meters';
 
 
     var date = new Date(0);
@@ -155,9 +184,12 @@ function callbackFunc2(response) {
 
     document.getElementById("travel_time").innerHTML = 'Travel Time (at 10 m/s): ' + timeString + ' minutes';
 
-    var date2x = new Date(0);
-    date2x.setSeconds(results['travel_time_10ms_min']*2); // specify value for SECONDS here
-    var timeString2x = date2x.toISOString().substr(11, 8);
+    //var date2x = new Date(0);
+    //date2x.setSeconds(results['travel_time_10ms_min']*2); // specify value for SECONDS here
+    //var timeString2x = date2x.toISOString().substr(11, 8);
 
-    document.getElementById("travel_time2x").innerHTML = 'Travel Time (at 10 m/s): ' + timeString2x + ' minutes';
+    //document.getElementById("travel_time2x").innerHTML = 'Travel Time (at 10 m/s): ' + timeString2x + ' minutes';
+
+    document.getElementById("precision").innerHTML = 'Mission precision: ~' + results['precision'].toFixed(2) + ' meters';
+    //document.getElementById("precision2x").innerHTML = 'Mission precision: ~' + results['precision'].toFixed(2) + ' meters';
 };

@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import geojson
 
-def path_to_html(name,area,missionGrid,path,margin_lvl,method):
+
+def path_to_html(name, area, missionGrid, path, margin_lvl, method):
     center_pos = [(area[0] + area[2]) / 2, (area[1] + area[3]) / 2]
     start_geojson = geojson.Point((missionGrid['start'][1], missionGrid['start'][0]))
     end_geojson = geojson.Point((missionGrid['end'][1], missionGrid['end'][0]))
@@ -9,15 +10,19 @@ def path_to_html(name,area,missionGrid,path,margin_lvl,method):
     bounds_cage = geojson.LineString([[missionGrid['bounds'][0][1], missionGrid['bounds'][0][0]], [missionGrid['bounds'][1][1], missionGrid['bounds'][1][0]], [missionGrid['bounds'][3][1], missionGrid['bounds'][3][0]], [missionGrid['bounds'][2][1], missionGrid['bounds'][2][0]], [missionGrid['bounds'][0][1], missionGrid['bounds'][0][0]]])
     area_cage = geojson.LineString([[area[1], area[0]], [area[1], area[2]], [area[3], area[2]], [area[3], area[0]], [area[1], area[0]]])
 
-    if missionGrid['distance_s_e'] > 2600:
-        zoom = 14
-    elif missionGrid['distance_s_e'] > 6000:
-        zoom = 13
-    else:
+    if missionGrid['distance_s_e'] <= 500:
+        zoom = 17
+    elif missionGrid['distance_s_e'] <= 1000:
+        zoom = 16
+    elif missionGrid['distance_s_e'] <= 2600:
         zoom = 15
+    elif missionGrid['distance_s_e'] <= 6000:
+        zoom = 14
+    else:
+        zoom = 13
 
     path_geojson = geojson.LineString([(p[1], p[0]) for p in path])
-    f = open(str(name) + "_" + str(missionGrid['n_points']) + "_" + str(margin_lvl) + "_" +str(method) +".html", "w")
+    f = open(str(name) + "_" + str(missionGrid['n_points']) + "_" + str(margin_lvl) + "_" + str(method) +".html", "w")
     f.write(
         """<html>
         <head>
@@ -73,7 +78,8 @@ def path_to_html(name,area,missionGrid,path,margin_lvl,method):
                        [listNodes['bounds'][0][1], listNodes['bounds'][0][0]]])
     '''
 
-def path_to_geojson(name,missionGrid,path,margin_lvl,method):
+
+def path_to_geojson(name, missionGrid, path, margin_lvl, method):
     start_geojson = geojson.Point((missionGrid['start'][1], missionGrid['start'][0]))
     end_geojson = geojson.Point((missionGrid['end'][1], missionGrid['end'][0]))
 
@@ -85,20 +91,27 @@ def path_to_geojson(name,missionGrid,path,margin_lvl,method):
 
     f.close()
 
-def path_to_JsonInterface(missionGrid,path):
+
+def path_to_JsonInterface(missionGrid, path):
     start_geojson = geojson.Point((missionGrid['start'][1], missionGrid['start'][0]))
     end_geojson = geojson.Point((missionGrid['end'][1], missionGrid['end'][0]))
     path_geojson = geojson.LineString([(p[1], p[0]) for p in path])
+    res_area = geojson.LineString([[missionGrid['outline'][1], missionGrid['outline'][0]], [missionGrid['outline'][1], missionGrid['outline'][2]], [missionGrid['outline'][3], missionGrid['outline'][2]], [missionGrid['outline'][3], missionGrid['outline'][0]], [missionGrid['outline'][1], missionGrid['outline'][0]]])
+    bounds = geojson.LineString([[missionGrid['bounds'][0][1], missionGrid['bounds'][0][0]], [missionGrid['bounds'][1][1], missionGrid['bounds'][1][0]], [missionGrid['bounds'][3][1], missionGrid['bounds'][3][0]], [missionGrid['bounds'][2][1], missionGrid['bounds'][2][0]], [missionGrid['bounds'][0][1], missionGrid['bounds'][0][0]]])
 
-    results = {'total_dist': missionGrid['total_dist'],'travel_time_10ms_min': missionGrid['travel_time_10ms_min']}
+    #print(missionGrid)
+    results = {'total_dist': missionGrid['total_dist'], 'travel_time_10ms_min': missionGrid['travel_time_10ms_min'],
+               'precision': missionGrid['neighbour']}
 
-    return start_geojson,end_geojson,path_geojson,results
+    return start_geojson, end_geojson, path_geojson, res_area, bounds, results
+
 
 def print_path_mapcos(listNodes, path):
     print(str(listNodes['start'])[1:-1] + " <green>")
     for node in path[1:-1]:
          print(str(node)[1:-1] + " <orange>")
     print(str(listNodes['end'])[1:-1] + " <red>")
+
 
 def print_grid_mapcos(listNodes):
     print(str(listNodes['start'])[1:-1] + " <green>")
